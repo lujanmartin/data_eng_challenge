@@ -19,6 +19,8 @@ graph TD
     C --> D[PostgreSQL]
     D --> E[Data Lake: Bronze, Silver, Gold]
     C --> F[Typesense]
+    G[Sample CSV in utils/] --> C
+    H[Uploaded Files] --> C
 ```
 ## Dataset
 
@@ -35,7 +37,7 @@ src/
 ├── movies_data_pipeline/           # Main app directory
 │   ├── api/                        # FastAPI API layer
 │   │   ├── routes/                 # API endpoints
-│   │   │   ├── data.py             # POST /v0.1.0/data/seed
+│   │   │   ├── data.py             # POST /v0.1.0/data/seed, POST /v0.1.0/data/seed-from-file, POST /v0.1.0/data/seed-from-csv
 │   │   │   ├── query.py            # GET /v0.1.0/query/movies
 │   │   │   └── search.py           # GET /v0.1.0/search/movies
 │   │   └── main.py                 # FastAPI entry point
@@ -81,6 +83,7 @@ src/
 | `services/`       | ETL pipeline, query, and search services. |
 | `data_access/`    | DB models, data lake, and connections. |
 | `domain/`         | Core movie entity definition.        |
+| `utils/`          | Sample CSV file for seeding.        |
 
 ## Initial Commit (v0.1.0)
 The first commit includes a minimal setup for the core components of the pipeline:
@@ -92,6 +95,14 @@ The first commit includes a minimal setup for the core components of the pipelin
   - **POST `/v0.1.0/data/seed`**: Seed sample data into PostgreSQL and Typesense. No parameters required.
 - **Docker Setup**: Runs PostgreSQL, Typesense, and the FastAPI app.
 
-
-
-
+## Recent Updates
+This update enhances the pipeline's functionality with new features and improvements:
+- **New Endpoints**:
+  - **POST `/v0.1.0/data/seed-from-file`**: Seed movie data from an uploaded file (JSON, CSV, or PDF) into PostgreSQL and Typesense. Requires a file upload and a `file_type` parameter (`json`, `csv`, or `pdf`). (in progress)
+  - **POST `/v0.1.0/data/seed-from-csv`**: Seed movie data from a predefined CSV file (`utils/sample_movies.csv`) into PostgreSQL and Typesense. No parameters required.
+- **File Seeding**:
+  - Added support for seeding data from files (JSON, CSV, PDF) via the `/v0.1.0/data/seed-from-file` endpoint.
+  - Added a `utils/` directory with a `sample_movies.csv` file for seeding via the `/v0.1.0/data/seed-from-csv` endpoint.
+- **Duplicate Handling**: The ETL pipeline now skips movies that already exist in the `DimMovie` table (based on the `name` column) to avoid `UniqueViolation` errors.
+- **Performance Improvements**: Reduced logging verbosity for `sqlalchemy.engine` to improve performance during data loading.
+- **Consistency**: Ensured that only movies successfully inserted into PostgreSQL are indexed in Typesense, maintaining consistency between the data warehouse and the vector database.
