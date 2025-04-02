@@ -8,57 +8,79 @@ A data engineering project that implements an ETL pipeline, data lake, data ware
 - **FastAPI**: REST API for seamless data operations and interaction with the pipeline.
 - **Data Lake**: Medallion architecture (bronze, silver, gold layers) using Parquet files for structured data storage and processing.
 
+  ## Architecture Overview
+
+This diagram illustrates the high-level flow of data through the movie data pipeline:
+
+```mermaid
+graph TD
+    A[FastAPI Routes] --> B[Controllers]
+    B --> C[Services]
+    C --> D[PostgreSQL]
+    D --> E[Data Lake: Bronze, Silver, Gold]
+    C --> F[Typesense]
+```
 ## Dataset
 
 This project uses the "IMDB movies dataset" from Kaggle, available at: https://www.kaggle.com/datasets/ashpalsingh1525/imdb-movies-dataset
 
 ## Project Structure
 
-Below is the directory structure of the project, outlining the key components and their organization:
+This project is a movie data pipeline built with FastAPI, PostgreSQL, and Typesense. Click below to view the directory structure:
 
+<summary>View Directory Structure</summary>
+
+```plaintext
 src/
-│
-├── movies_data_pipeline/
-│   ├── api/
-│   │   ├── routes/
-│   │   │   ├── data.py              # Routes for seeding data (POST /v0.1.0/data/seed)
-│   │   │   ├── query.py             # Routes for querying movies from PostgreSQL (GET /v0.1.0/query/movies)
-│   │   │   └── search.py            # Routes for searching movies with Typesense (GET /v0.1.0/search/movies)
-│   │   └── main.py                  # FastAPI app entry point
-│   ├── controllers/
-│   │   ├── seed_controller.py       # Logic for seeding data into PostgreSQL and Typesense
-│   │   ├── query_controller.py      # Logic for querying movies from the data warehouse
-│   │   └── search_controller.py     # Logic for searching movies using Typesense
-│   ├── services/
-│   │   ├── etl_service.py           # ETL pipeline for extracting, transforming, and loading movie data
-│   │   ├── query_service.py         # Service for querying movies from PostgreSQL
-│   │   ├── search_service.py        # Service for searching movies using Typesense
-│   │   └── seed_service.py          # Service for seeding sample data
-│   ├── data_access/
-│   │   ├── models/
-│   │   │   ├── fact_movie_performance.py  # Fact table for movie performance metrics
-│   │   │   ├── dim_movie.py         # Dimension table for movie details
-│   │   │   ├── dim_genre.py         # Dimension table for genres
-│   │   │   ├── dim_crew.py          # Dimension table for crew members
-│   │   │   ├── dim_country.py       # Dimension table for countries
-│   │   │   ├── dim_language.py      # Dimension table for languages
-│   │   │   ├── dim_date.py          # Dimension table for dates
-│   │   │   ├── bridge_movie_genre.py  # Bridge table for movie-genre relationships
-│   │   │   └── bridge_movie_crew.py   # Bridge table for movie-crew relationships
-│   │   ├── data_lake/
-│   │   │   ├── bronze/              # Raw data layer
-│   │   │   ├── silver/              # Cleaned and transformed data layer
-│   │   │   └── gold/                # Aggregated and optimized data layer
-│   │   ├── database.py              # Database connection and session management for PostgreSQL
-│   │   └── vector_db.py             # Configuration and connection for Typesense vector database
-│   └── domain/
-│       └── models/
-│           └── movie.py             # Domain model for movie entities
-│
-├── Dockerfile                       # Dockerfile for FastAPI app
-├── docker-compose.yml               # Docker Compose for all services (PostgreSQL, Typesense, FastAPI)
-├── pyproject.toml                   # Poetry for dependency management
-└── README.md                        # Project documentation
+├── movies_data_pipeline/           # Main app directory
+│   ├── api/                        # FastAPI API layer
+│   │   ├── routes/                 # API endpoints
+│   │   │   ├── data.py             # POST /v0.1.0/data/seed
+│   │   │   ├── query.py            # GET /v0.1.0/query/movies
+│   │   │   └── search.py           # GET /v0.1.0/search/movies
+│   │   └── main.py                 # FastAPI entry point
+│   ├── controllers/                # Business logic
+│   │   ├── seed_controller.py      # Seeding logic
+│   │   ├── query_controller.py     # Querying logic
+│   │   └── search_controller.py    # Search logic
+│   ├── services/                   # Data processing services
+│   │   ├── etl_service.py          # ETL pipeline
+│   │   ├── query_service.py        # Query service
+│   │   ├── search_service.py       # Search service
+│   │   └── seed_service.py         # Seed service
+│   ├── data_access/                # Data layer
+│   │   ├── models/                 # DB models
+│   │   │   ├── fact_movie_performance.py  # Movie performance
+│   │   │   ├── dim_movie.py        # Movie details
+│   │   │   ├── dim_genre.py        # Genres
+│   │   │   ├── dim_crew.py         # Crew members
+│   │   │   ├── dim_country.py      # Countries
+│   │   │   ├── dim_language.py     # Languages
+│   │   │   ├── dim_date.py         # Dates
+│   │   │   ├── bridge_movie_genre.py      # Movie-genre links
+│   │   │   └── bridge_movie_crew.py       # Movie-crew links
+│   │   ├── data_lake/              # Data lake
+│   │   │   ├── bronze/             # Raw data
+│   │   │   ├── silver/             # Cleaned data
+│   │   │   └── gold/               # Optimized data
+│   │   ├── database.py             # PostgreSQL connection
+│   │   └── vector_db.py            # Typesense connection
+│   └── domain/                     # Domain logic
+│       └── models/                 # Domain models
+│           └── movie.py            # Movie entity
+├── Dockerfile                      # FastAPI Dockerfile
+├── docker-compose.yml              # Docker Compose setup
+├── pyproject.toml                  # Poetry dependencies
+└── README.md                       # Documentation
+```
+### Overview of Key Components
+| Directory         | Purpose                              |
+|-------------------|--------------------------------------|
+| `api/`            | FastAPI routes for seeding, querying, and searching. |
+| `controllers/`    | Logic for API endpoints.             |
+| `services/`       | ETL pipeline, query, and search services. |
+| `data_access/`    | DB models, data lake, and connections. |
+| `domain/`         | Core movie entity definition.        |
 
 ## Initial Commit (v0.1.0)
 The first commit includes a minimal setup for the core components of the pipeline:
@@ -69,4 +91,7 @@ The first commit includes a minimal setup for the core components of the pipelin
   - **GET `/v0.1.0/search/movies`**: Search movies using Typesense. Query with a search term to match against `name`, `overview`, `genres`, `country`, `language`, or `status`. Supports pagination with `limit` (default: 10) and `offset` (default: 0).
   - **POST `/v0.1.0/data/seed`**: Seed sample data into PostgreSQL and Typesense. No parameters required.
 - **Docker Setup**: Runs PostgreSQL, Typesense, and the FastAPI app.
+
+
+
 
